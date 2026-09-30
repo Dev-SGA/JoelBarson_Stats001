@@ -9,6 +9,8 @@ type StatsGamePdfSheetProps = {
 
 type Phase = "build-up" | "defensive";
 
+type Tone = "blue" | "green" | "red" | "grey";
+
 const PHASE_LABEL: Record<Phase, string> = {
   "build-up": "Build-Up",
   defensive: "Defensive Phase",
@@ -26,32 +28,49 @@ function linkHost(url: string): string {
   }
 }
 
-function Bar({
+function StatTiles({ items }: { items: { label: string; value: number; tone?: Tone }[] }) {
+  return (
+    <ul className="spdf-stats">
+      {items.map((item) => (
+        <li key={item.label} className="spdf-stat">
+          <span className={`spdf-stat__value${item.tone ? ` spdf-stat__value--${item.tone}` : ""}`}>{item.value}</span>
+          <span className="spdf-stat__label">{item.label}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function RateBar({
   label,
   value,
-  total,
-  tone,
-  detail,
+  note,
+  segments,
 }: {
   label: string;
   value: number;
-  total: number;
-  tone: "blue" | "green" | "red";
-  detail?: string;
+  note: string;
+  segments: { value: number; tone: Tone }[];
 }) {
-  const share = pct(value, total);
+  const total = segments.reduce((sum, segment) => sum + segment.value, 0);
   return (
-    <div className="spdf-bar">
-      <div className="spdf-bar__head">
-        <span className="spdf-bar__label">{label}</span>
-        <span className="spdf-bar__figure">
-          {detail ?? value}
-          <span className="spdf-bar__pct">{share}%</span>
-        </span>
+    <div className="spdf-rate">
+      <div className="spdf-rate__head">
+        <span className="spdf-rate__label">{label}</span>
+        <span className="spdf-rate__value">{value}%</span>
       </div>
-      <div className="spdf-bar__track">
-        <div className={`spdf-bar__fill spdf-bar__fill--${tone}`} style={{ width: `${share}%` }} />
+      <div className="spdf-rate__track">
+        {segments.map((segment, index) =>
+          segment.value > 0 ? (
+            <span
+              key={index}
+              className={`spdf-rate__seg spdf-rate__seg--${segment.tone}`}
+              style={{ width: `${pct(segment.value, total)}%` }}
+            />
+          ) : null,
+        )}
       </div>
+      <p className="spdf-rate__note">{note}</p>
     </div>
   );
 }
@@ -61,23 +80,28 @@ function Section({
   title,
   value,
   unit,
-  children,
+  aside,
+  footer,
 }: {
   phase: Phase;
   title: string;
-  value: string;
+  value: number;
   unit: string;
-  children?: React.ReactNode;
+  aside: React.ReactNode;
+  footer?: React.ReactNode;
 }) {
   return (
     <section className={`spdf-section spdf-section--${phase}`}>
       <p className="spdf-section__phase">{PHASE_LABEL[phase]}</p>
       <h3 className="spdf-section__title">{title}</h3>
-      <div className="spdf-section__kpi">
-        <span className="spdf-section__value">{value}</span>
-        <span className="spdf-section__unit">{unit}</span>
+      <div className="spdf-section__body">
+        <div className="spdf-section__kpi">
+          <span className="spdf-section__value">{value}</span>
+          <span className="spdf-section__unit">{unit}</span>
+        </div>
+        <div className="spdf-section__aside">{aside}</div>
       </div>
-      {children ? <div className="spdf-section__detail">{children}</div> : null}
+      {footer ? <div className="spdf-section__footer">{footer}</div> : null}
     </section>
   );
 }
@@ -124,7 +148,6 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
   const { player, meta, progressivePasses, breaklinePasses, groundDuels } = stats;
   const incorrect = progressivePasses.attempted - progressivePasses.correct;
   const duelsWon = groundDuels.disputed - groundDuels.lost;
-  const issued = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
   return (
     <article className="stats-pdf" aria-hidden="true">
@@ -148,59 +171,82 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
           </div>
           <div className="spdf-head__meta">
             <span>{meta.subtitle}</span>
-            <span>{issued}</span>
           </div>
         </header>
 
-        <div className="spdf-grid">
+        <div className="spdf-grid spdf-grid--three">
           <Section
             phase="build-up"
             title="Progressive Passes"
-            value={String(progressivePasses.attempted)}
-            unit="attempted"
-          >
-            <Bar
-              label="Correct"
-              value={progressivePasses.correct}
-              total={progressivePasses.attempted}
-              detail={`${progressivePasses.correct}/${progressivePasses.attempted}`}
-              tone="green"
-            />
-            <Bar
-              label="Incorrect"
-              value={incorrect}
-              total={progressivePasses.attempted}
-              detail={`${incorrect}/${progressivePasses.attempted}`}
-              tone="red"
-            />
-          </Section>
+            value={progressivePasses.attempted}
+            unit="Progressive passes"
+            aside={
+              <StatTiles
+                items={[
+                  { label: "Correct", value: progressivePasses.correct, tone: "green" },
+                  { label: "Incorrect", value: incorrect, tone: "red" },
+                ]}
+              />
+            }
+            footer={
+              <RateBar
+                label="Pass accuracy"
+                value={pct(progressivePasses.correct, progressivePasses.attempted)}
+                note={`${progressivePasses.correct} of ${progressivePasses.attempted} progressive passes correct`}
+                segments={[
+                  { value: progressivePasses.correct, tone: "green" },
+                  { value: incorrect, tone: "red" },
+                ]}
+              />
+            }
+          />
 
-          <Section phase="build-up" title="Breakline Passes" value={String(breaklinePasses.count)} unit="breakline passes">
-            <Bar
-              label="Share of progressive passes"
-              value={breaklinePasses.count}
-              total={progressivePasses.attempted}
-              detail={`${breaklinePasses.count}/${progressivePasses.attempted}`}
-              tone="blue"
-            />
-          </Section>
+          <Section
+            phase="build-up"
+            title="Breakline Passes"
+            value={breaklinePasses.count}
+            unit="Breakline passes"
+            aside={
+              <StatTiles items={[{ label: "Progressive passes", value: progressivePasses.attempted, tone: "blue" }]} />
+            }
+            footer={
+              <RateBar
+                label="Share of progressive passes"
+                value={pct(breaklinePasses.count, progressivePasses.attempted)}
+                note={`${breaklinePasses.count} of ${progressivePasses.attempted} progressive passes broke the line`}
+                segments={[
+                  { value: breaklinePasses.count, tone: "blue" },
+                  { value: progressivePasses.attempted - breaklinePasses.count, tone: "grey" },
+                ]}
+              />
+            }
+          />
 
-          <Section phase="defensive" title="Ground Duels" value={String(groundDuels.disputed)} unit="disputed">
-            <Bar
-              label="Won"
-              value={duelsWon}
-              total={groundDuels.disputed}
-              detail={`${duelsWon}/${groundDuels.disputed}`}
-              tone="green"
-            />
-            <Bar
-              label="Lost"
-              value={groundDuels.lost}
-              total={groundDuels.disputed}
-              detail={`${groundDuels.lost}/${groundDuels.disputed}`}
-              tone="red"
-            />
-          </Section>
+          <Section
+            phase="defensive"
+            title="Ground Duels"
+            value={groundDuels.disputed}
+            unit="Ground duels"
+            aside={
+              <StatTiles
+                items={[
+                  { label: "Won", value: duelsWon, tone: "green" },
+                  { label: "Lost", value: groundDuels.lost, tone: "red" },
+                ]}
+              />
+            }
+            footer={
+              <RateBar
+                label="Duel win rate"
+                value={pct(duelsWon, groundDuels.disputed)}
+                note={`${duelsWon} of ${groundDuels.disputed} ground duels won`}
+                segments={[
+                  { value: duelsWon, tone: "green" },
+                  { value: groundDuels.lost, tone: "red" },
+                ]}
+              />
+            }
+          />
         </div>
 
         <PdfVideoLinks
