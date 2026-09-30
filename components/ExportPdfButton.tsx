@@ -51,8 +51,9 @@ export function ExportPdfButton({ stats }: ExportPdfButtonProps) {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "");
+      const session = stats.meta.session?.trim() || "001";
 
-      await exportStatsSlideToPdf(sheet, `stats-game-report-${safeName || "export"}.pdf`);
+      await exportStatsSlideToPdf(sheet, `${safeName || "athlete"}-stats-${session}.pdf`);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "PDF export failed.");
     } finally {

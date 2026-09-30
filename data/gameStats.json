@@ -1,7 +1,8 @@
 {
   "meta": {
     "title": "Stats Game Report",
-    "subtitle": "Individual match statistics"
+    "subtitle": "Individual match statistics",
+    "session": "001"
   },
   "player": {
     "name": "Joel Barson",

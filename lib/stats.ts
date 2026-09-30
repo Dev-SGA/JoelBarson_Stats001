@@ -4,6 +4,7 @@ export type GameStats = {
   meta: {
     title: string;
     subtitle: string;
+    session: string;
   };
   player: {
     name: string;
