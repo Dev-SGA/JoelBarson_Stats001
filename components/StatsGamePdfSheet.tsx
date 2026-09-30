@@ -185,7 +185,7 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
             />
           </Section>
 
-          <Section phase="build-up" title="Ground Duels" value={String(groundDuels.disputed)} unit="disputed">
+          <Section phase="defensive" title="Ground Duels" value={String(groundDuels.disputed)} unit="disputed">
             <Bar
               label="Won"
               value={duelsWon}

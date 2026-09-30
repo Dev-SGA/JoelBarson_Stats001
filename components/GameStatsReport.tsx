@@ -134,7 +134,7 @@ export function GameStatsReport({ stats }: GameStatsReportProps) {
     {
       id: "ground-duels",
       title: "Ground Duels",
-      phase: "build-up",
+      phase: "defensive",
       content: (
         <>
           <div className="metric-card metric-card--hero">

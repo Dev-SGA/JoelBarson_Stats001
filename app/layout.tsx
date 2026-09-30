@@ -4,7 +4,7 @@ import "./pdf.css";
 
 export const metadata: Metadata = {
   title: "Joel Barson — Game Stats | SGA Performance",
-  description: "Individual match statistics for Joel Barson (Club Ohio).",
+  description: "Individual match statistics for Joel Barson (FC Cincinnati).",
 };
 
 export const viewport = {
