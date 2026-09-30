@@ -1,0 +1,24 @@
+{
+  "meta": {
+    "title": "Stats Game Report",
+    "subtitle": "Individual match statistics"
+  },
+  "player": {
+    "name": "Joel Barson",
+    "club": "Club Ohio",
+    "photo": "/player/joel-barson.jpeg"
+  },
+  "progressivePasses": {
+    "attempted": 27,
+    "correct": 16
+  },
+  "breaklinePasses": {
+    "count": 9,
+    "videoLink": ""
+  },
+  "groundDuels": {
+    "disputed": 12,
+    "lost": 4,
+    "videoLink": ""
+  }
+}
