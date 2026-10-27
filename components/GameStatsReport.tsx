@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { AthleteProfileCard } from "@/components/AthleteProfileCard";
 import { ExportPdfButton } from "@/components/ExportPdfButton";
 import { ClipLinks } from "@/components/ClipLinks";
@@ -9,10 +10,10 @@ import { SgaBrand } from "@/components/SgaBrand";
 import { SgaCornerBrand } from "@/components/SgaCornerBrand";
 import { TopicsBoard, type Topic } from "@/components/TopicsBoard";
 import { BRAND } from "@/lib/brand";
-import type { GameStats } from "@/lib/stats";
+import { toGameStats, type MatchStats, type StatsReport } from "@/lib/stats";
 
 type GameStatsReportProps = {
-  stats: GameStats;
+  report: StatsReport;
 };
 
 type BarTone = "accent" | "positive" | "negative" | "muted";
@@ -67,8 +68,62 @@ function SplitMeter({
   );
 }
 
-export function GameStatsReport({ stats }: GameStatsReportProps) {
-  const { player, progressivePasses, breaklinePasses, groundDuels, meta } = stats;
+function MatchSwitcher({
+  matches,
+  activeId,
+  onChange,
+}: {
+  matches: MatchStats[];
+  activeId: string;
+  onChange: (id: string) => void;
+}) {
+  const index = matches.findIndex((match) => match.id === activeId);
+
+  return (
+    <div className="match-nav">
+      <div className="match-nav__session" role="group" aria-label="Matches">
+        <button
+          type="button"
+          className="match-nav__arrow"
+          onClick={() => onChange(matches[index - 1].id)}
+          disabled={index <= 0}
+          aria-label="Previous match"
+        >
+          <span aria-hidden="true">‹</span>
+        </button>
+        <div className="match-nav__pills">
+          {matches.map((match) => (
+            <button
+              key={match.id}
+              type="button"
+              className={`match-nav__pill${match.id === activeId ? " is-active" : ""}`}
+              aria-pressed={match.id === activeId}
+              onClick={() => onChange(match.id)}
+            >
+              {match.logo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={match.logo} alt="" className="club-logo club-logo--pill" />
+              ) : null}
+              {match.shortLabel}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          className="match-nav__arrow"
+          onClick={() => onChange(matches[index + 1].id)}
+          disabled={index < 0 || index === matches.length - 1}
+          aria-label="Next match"
+        >
+          <span aria-hidden="true">›</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function buildTopics(match: MatchStats): Topic[] {
+  const { progressivePasses, breaklinePasses, groundDuels, aerialDuels } = match;
 
   const incorrect = progressivePasses.attempted - progressivePasses.correct;
   const passAccuracy = percent(progressivePasses.correct, progressivePasses.attempted);
@@ -96,8 +151,8 @@ export function GameStatsReport({ stats }: GameStatsReportProps) {
               headline={`${progressivePasses.correct} of ${progressivePasses.attempted} · ${passAccuracy}%`}
               primary={progressivePasses.correct}
               secondary={incorrect}
-              primaryLabel="Correct"
-              secondaryLabel="Incorrect"
+              primaryLabel="Accurate"
+              secondaryLabel="Inaccurate"
               primaryTone="positive"
               secondaryTone="negative"
             />,
@@ -158,10 +213,59 @@ export function GameStatsReport({ stats }: GameStatsReportProps) {
     },
   ];
 
+  if (aerialDuels && aerialDuels.won + (aerialDuels.lost ?? 0) > 0) {
+    const aerialLost = aerialDuels.lost ?? 0;
+    const aerialTotal = aerialDuels.won + aerialLost;
+
+    topics.push({
+      id: "aerial-duels",
+      title: "Aerial Duels",
+      phase: "defensive",
+      content:
+        aerialLost > 0 ? (
+          <>
+            <div className="metric-card metric-card--hero">
+              <h3 className="metric-card__title">Aerial duels</h3>
+              <span className="metric-card__value">{aerialTotal}</span>
+              <p className="metric-card__caption">Total aerial duels contested in the match</p>
+            </div>
+            <SplitMeter
+              title="Duel outcome"
+              headline={`${percent(aerialDuels.won, aerialTotal)}% win rate`}
+              primary={aerialDuels.won}
+              secondary={aerialLost}
+              primaryLabel="Won"
+              secondaryLabel="Lost"
+              primaryTone="positive"
+              secondaryTone="negative"
+            />
+          </>
+        ) : (
+          <div className="metric-card metric-card--hero">
+            <h3 className="metric-card__title">Aerial duels won</h3>
+            <span className="metric-card__value">{aerialDuels.won}</span>
+            <p className="metric-card__caption">Aerial duels won in the match</p>
+          </div>
+        ),
+    });
+  }
+
+  return topics;
+}
+
+export function GameStatsReport({ report }: GameStatsReportProps) {
+  const { player, meta, matches } = report;
+  const initialMatchId = matches[0]?.id ?? "";
+  const [matchId, setMatchId] = useState(initialMatchId);
+  const match = matches.find((item) => item.id === matchId) ?? matches[0];
+  const exportStats = useMemo(() => toGameStats(report, match), [report, match]);
+  const topics = useMemo(() => buildTopics(match), [match]);
+
   return (
     <VideoLinksProvider
-      initialBreaklineVideoLink={breaklinePasses.videoLink}
-      initialGroundDuelsVideoLink={groundDuels.videoLink}
+      key={match.id}
+      initialBreaklineVideoLink={match.breaklinePasses.videoLink}
+      initialGroundDuelsVideoLink={match.groundDuels.videoLink}
     >
       <SgaCornerBrand />
 
@@ -171,17 +275,31 @@ export function GameStatsReport({ stats }: GameStatsReportProps) {
           <div className="report-header__intro">
             <p className="report-header__eyebrow">{BRAND.legal}</p>
             <h1 className="report-header__title">{meta.title}</h1>
-            <p className="report-header__meta">{meta.subtitle}</p>
+            <p className="report-header__meta">
+              {match.logo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={match.logo} alt="" className="club-logo club-logo--meta" />
+              ) : null}
+              {match.label}
+            </p>
           </div>
         </header>
 
         <div className="report-grid">
-          <AthleteProfileCard name={player.name} club={player.club} photoSrc={player.photo}>
-            <ExportPdfButton stats={stats} />
+          <AthleteProfileCard
+            name={player.name}
+            club={player.club}
+            clubLogo={player.clubLogo}
+            photoSrc={player.photo}
+          >
+            <ExportPdfButton stats={exportStats} />
           </AthleteProfileCard>
 
           <main className="report-main">
-            <TopicsBoard topics={topics} />
+            <div className="view-panel">
+              <MatchSwitcher matches={matches} activeId={match.id} onChange={setMatchId} />
+              <TopicsBoard topics={topics} />
+            </div>
           </main>
         </div>
 

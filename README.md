@@ -1,6 +1,6 @@
 # Joel Barson — Stats de Jogo
 
-App Next.js (Vercel) para exibir estatísticas individuais de **Joel Barson** (FC Cincinnati) durante um jogo.
+App Next.js (Vercel) para exibir estatísticas individuais de **Joel Barson** (FC Cincinnati) por jogo (sessão **002**: Club Ohio e St. Louis City).
 
 Estrutura e visual alinhados ao app de stats da SGA (tema escuro, marca SGA Performance).
 

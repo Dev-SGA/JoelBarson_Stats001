@@ -2,24 +2,55 @@
   "meta": {
     "title": "Stats Game Report",
     "subtitle": "Individual match statistics",
-    "session": "001"
+    "session": "002"
   },
   "player": {
     "name": "Joel Barson",
     "club": "FC Cincinnati",
+    "clubLogo": "/clubs/fc-cincinnati.png",
     "photo": "/player/joel-barson.jpeg"
   },
-  "progressivePasses": {
-    "attempted": 27,
-    "correct": 16
-  },
-  "breaklinePasses": {
-    "count": 9,
-    "videoLink": "https://drive.google.com/file/d/19TxzBAHVRAPaK7oTb2PLBuelXaFQazFE/view?usp=drive_link"
-  },
-  "groundDuels": {
-    "disputed": 12,
-    "lost": 4,
-    "videoLink": "https://drive.google.com/file/d/1TgTvs0kt5C5D0QjoYqK9Gvz3D_jnoqH-/view?usp=drive_link"
-  }
+  "matches": [
+    {
+      "id": "club-ohio",
+      "label": "vs Club Ohio",
+      "shortLabel": "Club Ohio",
+      "logo": "/clubs/club-ohio.png",
+      "progressivePasses": {
+        "attempted": 27,
+        "correct": 16
+      },
+      "breaklinePasses": {
+        "count": 9,
+        "videoLink": "https://drive.google.com/file/d/19TxzBAHVRAPaK7oTb2PLBuelXaFQazFE/view?usp=drive_link"
+      },
+      "groundDuels": {
+        "disputed": 12,
+        "lost": 4,
+        "videoLink": "https://drive.google.com/file/d/1TgTvs0kt5C5D0QjoYqK9Gvz3D_jnoqH-/view?usp=drive_link"
+      }
+    },
+    {
+      "id": "st-louis-city",
+      "label": "vs St. Louis City Soccer Club",
+      "shortLabel": "St. Louis City",
+      "logo": "/clubs/st-louis-city.png",
+      "progressivePasses": {
+        "attempted": 31,
+        "correct": 20
+      },
+      "breaklinePasses": {
+        "count": 9,
+        "videoLink": ""
+      },
+      "groundDuels": {
+        "disputed": 8,
+        "lost": 2,
+        "videoLink": ""
+      },
+      "aerialDuels": {
+        "won": 2
+      }
+    }
+  ]
 }

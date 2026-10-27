@@ -145,9 +145,12 @@ function PdfVideoLinks({
 }
 
 export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfSheetProps) {
-  const { player, meta, progressivePasses, breaklinePasses, groundDuels } = stats;
+  const { player, meta, progressivePasses, breaklinePasses, groundDuels, aerialDuels } = stats;
   const incorrect = progressivePasses.attempted - progressivePasses.correct;
   const duelsWon = groundDuels.disputed - groundDuels.lost;
+  const aerialLost = aerialDuels?.lost ?? 0;
+  const aerialTotal = (aerialDuels?.won ?? 0) + aerialLost;
+  const showAerial = aerialDuels && aerialTotal > 0;
 
   return (
     <article className="stats-pdf" aria-hidden="true">
@@ -174,7 +177,7 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
           </div>
         </header>
 
-        <div className="spdf-grid spdf-grid--three">
+        <div className={`spdf-grid${showAerial ? " spdf-grid--four" : " spdf-grid--three"}`}>
           <Section
             phase="build-up"
             title="Progressive Passes"
@@ -183,8 +186,8 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
             aside={
               <StatTiles
                 items={[
-                  { label: "Correct", value: progressivePasses.correct, tone: "green" },
-                  { label: "Incorrect", value: incorrect, tone: "red" },
+                  { label: "Accurate", value: progressivePasses.correct, tone: "green" },
+                  { label: "Inaccurate", value: incorrect, tone: "red" },
                 ]}
               />
             }
@@ -247,6 +250,40 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
               />
             }
           />
+
+          {showAerial ? (
+            <Section
+              phase="defensive"
+              title="Aerial Duels"
+              value={aerialLost > 0 ? aerialTotal : aerialDuels!.won}
+              unit={aerialLost > 0 ? "Aerial duels" : "Aerial duels won"}
+              aside={
+                aerialLost > 0 ? (
+                  <StatTiles
+                    items={[
+                      { label: "Won", value: aerialDuels!.won, tone: "green" },
+                      { label: "Lost", value: aerialLost, tone: "red" },
+                    ]}
+                  />
+                ) : (
+                  <StatTiles items={[{ label: "Won", value: aerialDuels!.won, tone: "green" }]} />
+                )
+              }
+              footer={
+                aerialLost > 0 ? (
+                  <RateBar
+                    label="Duel win rate"
+                    value={pct(aerialDuels!.won, aerialTotal)}
+                    note={`${aerialDuels!.won} of ${aerialTotal} aerial duels won`}
+                    segments={[
+                      { value: aerialDuels!.won, tone: "green" },
+                      { value: aerialLost, tone: "red" },
+                    ]}
+                  />
+                ) : undefined
+              }
+            />
+          ) : null}
         </div>
 
         <PdfVideoLinks
