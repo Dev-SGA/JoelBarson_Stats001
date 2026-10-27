@@ -163,7 +163,16 @@ function MatchSwitcher({
 function buildTopics(match: MatchStats): Topic[] {
   const { progressivePasses, breaklinePasses, groundDuels, aerialDuels } = match;
   const breaklineClip = matchVideoClip(match, "breakline", "Breakline passes", "Breakline Passes");
-  const groundClip = matchVideoClip(match, "groundDuels", "Ground duels", "Ground Duels");
+  const duelsClip = matchVideoClip(
+    match,
+    "groundDuels",
+    "Ground duels",
+    "Ground Duels",
+    "Aerial duels",
+    "Aerial Duels",
+    "Duels",
+    "All duels",
+  );
 
   const incorrect = progressivePasses.attempted - progressivePasses.correct;
   const passAccuracy = percent(progressivePasses.correct, progressivePasses.attempted);
@@ -235,8 +244,8 @@ function buildTopics(match: MatchStats): Topic[] {
       content: (
         <>
           <div className="metric-card metric-card--hero">
-            <ClipMetricTitle label="Ground duels" href={groundClip} />
-            <ClipAnchor href={groundClip} className="metric-card__value clip-link--value" ariaLabel="Open video: Ground duels">
+            <ClipMetricTitle label="Ground duels" href={duelsClip} />
+            <ClipAnchor href={duelsClip} className="metric-card__value clip-link--value" ariaLabel="Open video: Ground duels">
               {groundDuels.disputed}
             </ClipAnchor>
             <p className="metric-card__caption">Total ground duels contested in the match</p>
@@ -250,8 +259,8 @@ function buildTopics(match: MatchStats): Topic[] {
             secondaryLabel="Lost"
             primaryTone="positive"
             secondaryTone="negative"
-            primaryHref={groundClip}
-            secondaryHref={groundClip}
+            primaryHref={duelsClip}
+            secondaryHref={duelsClip}
           />
         </>
       ),
@@ -270,8 +279,10 @@ function buildTopics(match: MatchStats): Topic[] {
         aerialLost > 0 ? (
           <>
             <div className="metric-card metric-card--hero">
-              <h3 className="metric-card__title">Aerial duels</h3>
-              <span className="metric-card__value">{aerialTotal}</span>
+              <ClipMetricTitle label="Aerial duels" href={duelsClip} />
+              <ClipAnchor href={duelsClip} className="metric-card__value clip-link--value" ariaLabel="Open video: Aerial duels">
+                {aerialTotal}
+              </ClipAnchor>
               <p className="metric-card__caption">Total aerial duels contested in the match</p>
             </div>
             <SplitMeter
@@ -283,12 +294,16 @@ function buildTopics(match: MatchStats): Topic[] {
               secondaryLabel="Lost"
               primaryTone="positive"
               secondaryTone="negative"
+              primaryHref={duelsClip}
+              secondaryHref={duelsClip}
             />
           </>
         ) : (
           <div className="metric-card metric-card--hero">
-            <h3 className="metric-card__title">Aerial duels won</h3>
-            <span className="metric-card__value">{aerialDuels.won}</span>
+            <ClipMetricTitle label="Aerial duels won" href={duelsClip} />
+            <ClipAnchor href={duelsClip} className="metric-card__value clip-link--value" ariaLabel="Open video: Aerial duels">
+              {aerialDuels.won}
+            </ClipAnchor>
             <p className="metric-card__caption">Aerial duels won in the match</p>
           </div>
         ),

@@ -51,16 +51,30 @@
       },
       "breaklinePasses": {
         "count": 9,
-        "videoLink": ""
+        "videoLink": "https://drive.google.com/file/d/1ZRjPUaNYjnnwOGO2ZTJlh7B1ojkSWWl3/view?usp=drive_link"
       },
       "groundDuels": {
         "disputed": 8,
         "lost": 2,
-        "videoLink": ""
+        "videoLink": "https://drive.google.com/file/d/14ZEkan9QyMA5oSOOj5ac-iBKdU681So5/view?usp=drive_link"
       },
       "aerialDuels": {
         "won": 2
-      }
+      },
+      "videos": [
+        {
+          "label": "Breakline passes",
+          "url": "https://drive.google.com/file/d/1ZRjPUaNYjnnwOGO2ZTJlh7B1ojkSWWl3/view?usp=drive_link"
+        },
+        {
+          "label": "Ground duels",
+          "url": "https://drive.google.com/file/d/14ZEkan9QyMA5oSOOj5ac-iBKdU681So5/view?usp=drive_link"
+        },
+        {
+          "label": "Aerial duels",
+          "url": "https://drive.google.com/file/d/14ZEkan9QyMA5oSOOj5ac-iBKdU681So5/view?usp=drive_link"
+        }
+      ]
     }
   ]
 }
