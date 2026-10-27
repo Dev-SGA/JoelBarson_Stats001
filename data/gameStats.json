@@ -28,7 +28,17 @@
         "disputed": 12,
         "lost": 4,
         "videoLink": "https://drive.google.com/file/d/1TgTvs0kt5C5D0QjoYqK9Gvz3D_jnoqH-/view?usp=drive_link"
-      }
+      },
+      "videos": [
+        {
+          "label": "Breakline passes",
+          "url": "https://drive.google.com/file/d/19TxzBAHVRAPaK7oTb2PLBuelXaFQazFE/view?usp=drive_link"
+        },
+        {
+          "label": "Ground duels",
+          "url": "https://drive.google.com/file/d/1TgTvs0kt5C5D0QjoYqK9Gvz3D_jnoqH-/view?usp=drive_link"
+        }
+      ]
     },
     {
       "id": "st-louis-city",

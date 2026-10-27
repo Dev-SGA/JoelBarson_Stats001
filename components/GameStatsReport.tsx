@@ -3,20 +3,28 @@
 import { useMemo, useState } from "react";
 import { AthleteProfileCard } from "@/components/AthleteProfileCard";
 import { ExportPdfButton } from "@/components/ExportPdfButton";
-import { ClipLinks } from "@/components/ClipLinks";
+import { ClipAnchor, ClipLegendLabel, ClipMetricTitle, PlayTip } from "@/components/ClipUi";
 import { VideoLinksProvider } from "@/components/VideoLinksContext";
 import { MetricFlow } from "@/components/MetricFlow";
 import { SgaBrand } from "@/components/SgaBrand";
 import { SgaCornerBrand } from "@/components/SgaCornerBrand";
 import { TopicsBoard, type Topic } from "@/components/TopicsBoard";
 import { BRAND } from "@/lib/brand";
-import { toGameStats, type MatchStats, type StatsReport } from "@/lib/stats";
+import { matchVideoClip, toGameStats, type MatchStats, type StatsReport } from "@/lib/stats";
 
 type GameStatsReportProps = {
   report: StatsReport;
 };
 
 type BarTone = "accent" | "positive" | "negative" | "muted";
+
+const PASS_TIPS = {
+  progressive:
+    "Progressive Pass — A pass that moved the ball significantly toward goal or created a clear opportunity to advance the attack.",
+  accurate: "Accurate Pass — A progressive pass that successfully reached a teammate.",
+  inaccurate:
+    "Inaccurate Pass — A progressive pass that failed to reach a teammate or immediately put the team under pressure.",
+} as const;
 
 function percent(value: number, total: number): number {
   return total > 0 ? Math.round((value / total) * 100) : 0;
@@ -31,6 +39,9 @@ function SplitMeter({
   primaryTone,
   secondaryTone,
   headline,
+  primaryHref,
+  secondaryHref,
+  usePlayTips,
 }: {
   title: string;
   primary: number;
@@ -40,6 +51,9 @@ function SplitMeter({
   primaryTone: BarTone;
   secondaryTone: BarTone;
   headline: string;
+  primaryHref?: string;
+  secondaryHref?: string;
+  usePlayTips?: boolean;
 }) {
   const total = primary + secondary;
   const primaryPct = percent(primary, total);
@@ -55,13 +69,37 @@ function SplitMeter({
       <ul className="legend">
         <li>
           <span className={`legend__dot legend__dot--${primaryTone}`} />
-          <span className="legend__label">{primaryLabel}</span>
-          <strong>{primary}</strong>
+          {usePlayTips ? (
+            <PlayTip label={primaryLabel} tip={PASS_TIPS.accurate} href={primaryHref} />
+          ) : (
+            <ClipLegendLabel label={primaryLabel} href={primaryHref} />
+          )}
+          {primaryHref ? (
+            <ClipAnchor href={primaryHref} className="legend__clip-stat" ariaLabel={`Open video: ${primaryLabel}`}>
+              {primary} · {primaryPct}%
+            </ClipAnchor>
+          ) : (
+            <strong>
+              {primary} · {primaryPct}%
+            </strong>
+          )}
         </li>
         <li>
           <span className={`legend__dot legend__dot--${secondaryTone}`} />
-          <span className="legend__label">{secondaryLabel}</span>
-          <strong>{secondary}</strong>
+          {usePlayTips ? (
+            <PlayTip label={secondaryLabel} tip={PASS_TIPS.inaccurate} href={secondaryHref} />
+          ) : (
+            <ClipLegendLabel label={secondaryLabel} href={secondaryHref} />
+          )}
+          {secondaryHref ? (
+            <ClipAnchor href={secondaryHref} className="legend__clip-stat" ariaLabel={`Open video: ${secondaryLabel}`}>
+              {secondary} · {percent(secondary, total)}%
+            </ClipAnchor>
+          ) : (
+            <strong>
+              {secondary} · {percent(secondary, total)}%
+            </strong>
+          )}
         </li>
       </ul>
     </div>
@@ -124,6 +162,8 @@ function MatchSwitcher({
 
 function buildTopics(match: MatchStats): Topic[] {
   const { progressivePasses, breaklinePasses, groundDuels, aerialDuels } = match;
+  const breaklineClip = matchVideoClip(match, "breakline", "Breakline passes", "Breakline Passes");
+  const groundClip = matchVideoClip(match, "groundDuels", "Ground duels", "Ground Duels");
 
   const incorrect = progressivePasses.attempted - progressivePasses.correct;
   const passAccuracy = percent(progressivePasses.correct, progressivePasses.attempted);
@@ -141,7 +181,9 @@ function buildTopics(match: MatchStats): Topic[] {
         <MetricFlow
           items={[
             <div key="attempted" className="metric-card metric-card--hero">
-              <h3 className="metric-card__title">Progressive passes</h3>
+              <h3 className="metric-card__title metric-card__title--tip">
+                <PlayTip label="Progressive passes" tip={PASS_TIPS.progressive} />
+              </h3>
               <span className="metric-card__value">{progressivePasses.attempted}</span>
               <p className="metric-card__caption">Passes attempted that moved the ball significantly toward goal</p>
             </div>,
@@ -155,6 +197,7 @@ function buildTopics(match: MatchStats): Topic[] {
               secondaryLabel="Inaccurate"
               primaryTone="positive"
               secondaryTone="negative"
+              usePlayTips
             />,
           ]}
         />
@@ -165,25 +208,24 @@ function buildTopics(match: MatchStats): Topic[] {
       title: "Breakline Passes",
       phase: "build-up",
       content: (
-        <>
-          <MetricFlow
-            items={[
-              <div key="breakline" className="metric-card metric-card--hero">
-                <h3 className="metric-card__title">Breakline passes</h3>
-                <span className="metric-card__value">{breaklinePasses.count}</span>
-                <p className="metric-card__caption">Passes that broke the defensive line</p>
-              </div>,
-              <div key="share" className="metric-card">
-                <h3 className="metric-card__title">Share of progressive passes</h3>
-                <span className="metric-card__value">{breaklineShare}%</span>
-                <span className="metric-card__pct">
-                  {breaklinePasses.count} of {progressivePasses.attempted} progressive passes
-                </span>
-              </div>,
-            ]}
-          />
-          <ClipLinks scope="breakline" />
-        </>
+        <MetricFlow
+          items={[
+            <div key="breakline" className="metric-card metric-card--hero">
+              <ClipMetricTitle label="Breakline passes" href={breaklineClip} />
+              <ClipAnchor href={breaklineClip} className="metric-card__value clip-link--value" ariaLabel="Open video: Breakline passes">
+                {breaklinePasses.count}
+              </ClipAnchor>
+              <p className="metric-card__caption">Passes that broke the defensive line</p>
+            </div>,
+            <div key="share" className="metric-card">
+              <h3 className="metric-card__title">Share of progressive passes</h3>
+              <span className="metric-card__value">{breaklineShare}%</span>
+              <span className="metric-card__pct">
+                {breaklinePasses.count} of {progressivePasses.attempted} progressive passes
+              </span>
+            </div>,
+          ]}
+        />
       ),
     },
     {
@@ -193,8 +235,10 @@ function buildTopics(match: MatchStats): Topic[] {
       content: (
         <>
           <div className="metric-card metric-card--hero">
-            <h3 className="metric-card__title">Ground duels</h3>
-            <span className="metric-card__value">{groundDuels.disputed}</span>
+            <ClipMetricTitle label="Ground duels" href={groundClip} />
+            <ClipAnchor href={groundClip} className="metric-card__value clip-link--value" ariaLabel="Open video: Ground duels">
+              {groundDuels.disputed}
+            </ClipAnchor>
             <p className="metric-card__caption">Total ground duels contested in the match</p>
           </div>
           <SplitMeter
@@ -206,8 +250,9 @@ function buildTopics(match: MatchStats): Topic[] {
             secondaryLabel="Lost"
             primaryTone="positive"
             secondaryTone="negative"
+            primaryHref={groundClip}
+            secondaryHref={groundClip}
           />
-          <ClipLinks scope="groundDuels" />
         </>
       ),
     },

@@ -21,6 +21,11 @@ export type AerialDuels = {
   lost?: number;
 };
 
+export type MatchVideo = {
+  label: string;
+  url: string;
+};
+
 export type MatchStats = {
   id: string;
   label: string;
@@ -30,6 +35,7 @@ export type MatchStats = {
   breaklinePasses: BreaklinePasses;
   groundDuels: GroundDuels;
   aerialDuels?: AerialDuels | null;
+  videos?: MatchVideo[];
 };
 
 export type StatsReport = {
@@ -55,7 +61,23 @@ export type GameStats = {
   breaklinePasses: BreaklinePasses;
   groundDuels: GroundDuels;
   aerialDuels?: AerialDuels | null;
+  videos?: MatchVideo[];
 };
+
+export function clipUrl(videos: MatchVideo[] | undefined, ...aliases: string[]): string | undefined {
+  if (!videos?.length) return undefined;
+  const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const keys = new Set(aliases.map(normalize));
+  return videos.find((video) => keys.has(normalize(video.label)))?.url;
+}
+
+export function matchVideoClip(match: MatchStats, scope: "breakline" | "groundDuels", ...aliases: string[]): string | undefined {
+  const fromList = clipUrl(match.videos, ...aliases)?.trim();
+  if (fromList) return fromList;
+  const fallback = scope === "breakline" ? match.breaklinePasses.videoLink : match.groundDuels.videoLink;
+  const trimmed = fallback.trim();
+  return trimmed || undefined;
+}
 
 export function getStatsReport(): StatsReport {
   return gameStats as StatsReport;
@@ -74,6 +96,7 @@ export function toGameStats(report: StatsReport, match: MatchStats): GameStats {
     breaklinePasses: match.breaklinePasses,
     groundDuels: match.groundDuels,
     aerialDuels: match.aerialDuels ?? null,
+    videos: match.videos,
   };
 }
 
