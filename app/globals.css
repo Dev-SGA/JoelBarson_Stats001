@@ -495,6 +495,95 @@ body::before {
   outline-offset: 2px;
 }
 
+.per-game-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--tone-accent) 28%, var(--line));
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--sga-navy) 55%, var(--surface-sunken));
+}
+
+.per-game-badge--inline {
+  margin-top: 6px;
+}
+
+.per-game-badge__avg {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.per-game-badge__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.per-game-badge__label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tone-accent);
+}
+
+.per-game-badge__games {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.per-game-badge-subtle {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.count-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 10px;
+  margin: 0 0 10px;
+}
+
+.count-line__main {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.count-line__sep {
+  font-size: 18px;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--sga-white) 28%, transparent);
+}
+
+.count-line__avg {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: color-mix(in srgb, var(--sga-white) 48%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-card__caption--season {
+  margin-top: 4px;
+}
+
 .board {
   display: grid;
   gap: 18px;

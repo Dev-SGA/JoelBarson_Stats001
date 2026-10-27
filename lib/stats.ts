@@ -26,8 +26,11 @@ export type MatchVideo = {
   url: string;
 };
 
+export type MatchKind = "session" | "season";
+
 export type MatchStats = {
   id: string;
+  kind?: MatchKind;
   label: string;
   shortLabel: string;
   logo: string;
@@ -36,6 +39,8 @@ export type MatchStats = {
   groundDuels: GroundDuels;
   aerialDuels?: AerialDuels | null;
   videos?: MatchVideo[];
+  /** Set on season aggregate — number of matches rolled up. */
+  games?: number;
 };
 
 export type StatsReport = {
@@ -62,6 +67,7 @@ export type GameStats = {
   groundDuels: GroundDuels;
   aerialDuels?: AerialDuels | null;
   videos?: MatchVideo[];
+  games?: number;
 };
 
 export function clipUrl(videos: MatchVideo[] | undefined, ...aliases: string[]): string | undefined {
@@ -83,12 +89,48 @@ export function getStatsReport(): StatsReport {
   return gameStats as StatsReport;
 }
 
+/** Average per recorded game, with one decimal when it is not a whole number. */
+export function perGame(total: number, games: number): string {
+  const value = games > 0 ? total / games : 0;
+  const rounded = Math.round(value * 10) / 10;
+  return rounded.toFixed(1).replace(/\.0$/, "");
+}
+
+export function seasonMatch(matches: MatchStats[]): MatchStats {
+  const games = matches.length;
+  const aerialWon = matches.reduce((sum, match) => sum + (match.aerialDuels?.won ?? 0), 0);
+  const aerialLost = matches.reduce((sum, match) => sum + (match.aerialDuels?.lost ?? 0), 0);
+
+  return {
+    id: "season",
+    kind: "season",
+    label: "Season totals",
+    shortLabel: "Season",
+    logo: "",
+    games,
+    progressivePasses: {
+      attempted: matches.reduce((sum, match) => sum + match.progressivePasses.attempted, 0),
+      correct: matches.reduce((sum, match) => sum + match.progressivePasses.correct, 0),
+    },
+    breaklinePasses: {
+      count: matches.reduce((sum, match) => sum + match.breaklinePasses.count, 0),
+      videoLink: "",
+    },
+    groundDuels: {
+      disputed: matches.reduce((sum, match) => sum + match.groundDuels.disputed, 0),
+      lost: matches.reduce((sum, match) => sum + match.groundDuels.lost, 0),
+      videoLink: "",
+    },
+    aerialDuels: aerialWon + aerialLost > 0 ? { won: aerialWon, lost: aerialLost } : null,
+  };
+}
+
 export function toGameStats(report: StatsReport, match: MatchStats): GameStats {
   return {
     meta: {
       ...report.meta,
       subtitle: match.label,
-      fileSlug: `${report.meta.session}-${match.id}`,
+      fileSlug: match.id === "season" ? `${report.meta.session}-season` : `${report.meta.session}-${match.id}`,
     },
     player: report.player,
     opponentLogo: match.logo,
@@ -97,6 +139,7 @@ export function toGameStats(report: StatsReport, match: MatchStats): GameStats {
     groundDuels: match.groundDuels,
     aerialDuels: match.aerialDuels ?? null,
     videos: match.videos,
+    games: match.games,
   };
 }
 
