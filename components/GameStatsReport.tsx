@@ -259,8 +259,6 @@ function buildTopics(match: MatchStats): Topic[] {
             secondaryLabel="Lost"
             primaryTone="positive"
             secondaryTone="negative"
-            primaryHref={duelsClip}
-            secondaryHref={duelsClip}
           />
         </>
       ),
@@ -294,8 +292,6 @@ function buildTopics(match: MatchStats): Topic[] {
               secondaryLabel="Lost"
               primaryTone="positive"
               secondaryTone="negative"
-              primaryHref={duelsClip}
-              secondaryHref={duelsClip}
             />
           </>
         ) : (

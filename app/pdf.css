@@ -119,10 +119,42 @@
 }
 
 .spdf-side__club {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 6px 0 0;
   font-size: 16px;
   font-weight: 600;
   color: #b7c9d6;
+}
+
+.spdf-side__club-logo {
+  display: block;
+  width: auto;
+  height: 26px;
+}
+
+.spdf-play {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-left: 4px;
+  line-height: 0;
+  text-decoration: none;
+  vertical-align: middle;
+}
+
+.spdf-play__icon {
+  display: block;
+  width: 14px;
+  height: 14px;
+}
+
+.spdf-play-target {
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-decoration: none;
 }
 
 .spdf-side__slogan {
@@ -170,6 +202,18 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #072334;
+}
+
+.spdf-head__match {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spdf-head__logo {
+  display: block;
+  width: auto;
+  height: 28px;
 }
 
 .spdf-head__meta {
@@ -234,6 +278,9 @@
 }
 
 .spdf-section__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: 0;
   font-size: 13px;
   font-weight: 800;
@@ -265,6 +312,9 @@
 }
 
 .spdf-section__value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 50px;
   font-weight: 800;
   line-height: 0.95;

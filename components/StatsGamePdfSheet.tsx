@@ -1,10 +1,13 @@
 import { BRAND } from "@/lib/brand";
-import type { GameStats } from "@/lib/stats";
+import { clipUrl, type GameStats } from "@/lib/stats";
 
 type StatsGamePdfSheetProps = {
   stats: GameStats;
   photoUrl: string;
   logoUrl: string;
+  playIconUrl: string;
+  clubLogoUrl?: string;
+  opponentLogoUrl?: string;
 };
 
 type Phase = "build-up" | "defensive";
@@ -20,12 +23,43 @@ function pct(value: number, total: number): number {
   return total > 0 ? Math.round((value / total) * 100) : 0;
 }
 
-function linkHost(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return url.length > 48 ? `${url.slice(0, 45)}…` : url;
-  }
+function PdfPlay({ href, playIconUrl }: { href?: string; playIconUrl: string }) {
+  if (!href) return null;
+  return (
+    <a className="spdf-play" href={href} data-pdf-link={href} target="_blank" rel="noreferrer" aria-label="Open video">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={playIconUrl} alt="" className="spdf-play__icon" width={14} height={14} />
+    </a>
+  );
+}
+
+function PdfPlayTarget({ href, children }: { href?: string; children: React.ReactNode }) {
+  if (!href) return <>{children}</>;
+  return (
+    <a className="spdf-play-target" href={href} data-pdf-link={href} target="_blank" rel="noreferrer">
+      {children}
+    </a>
+  );
+}
+
+function resolveBreaklineClip(stats: GameStats): string | undefined {
+  const fromList = clipUrl(stats.videos, "Breakline passes", "Breakline Passes")?.trim();
+  const fallback = stats.breaklinePasses.videoLink.trim();
+  return fromList || fallback || undefined;
+}
+
+function resolveDuelsClip(stats: GameStats): string | undefined {
+  const fromList = clipUrl(
+    stats.videos,
+    "Ground duels",
+    "Ground Duels",
+    "Aerial duels",
+    "Aerial Duels",
+    "Duels",
+    "All duels",
+  )?.trim();
+  const fallback = stats.groundDuels.videoLink.trim();
+  return fromList || fallback || undefined;
 }
 
 function StatTiles({ items }: { items: { label: string; value: number; tone?: Tone }[] }) {
@@ -82,6 +116,8 @@ function Section({
   unit,
   aside,
   footer,
+  playHref,
+  playIconUrl,
 }: {
   phase: Phase;
   title: string;
@@ -89,14 +125,22 @@ function Section({
   unit: string;
   aside: React.ReactNode;
   footer?: React.ReactNode;
+  playHref?: string;
+  playIconUrl: string;
 }) {
   return (
     <section className={`spdf-section spdf-section--${phase}`}>
       <p className="spdf-section__phase">{PHASE_LABEL[phase]}</p>
-      <h3 className="spdf-section__title">{title}</h3>
+      <h3 className="spdf-section__title">
+        {title}
+        <PdfPlay href={playHref} playIconUrl={playIconUrl} />
+      </h3>
       <div className="spdf-section__body">
         <div className="spdf-section__kpi">
-          <span className="spdf-section__value">{value}</span>
+          <span className="spdf-section__value">
+            <PdfPlayTarget href={playHref}>{value}</PdfPlayTarget>
+            <PdfPlay href={playHref} playIconUrl={playIconUrl} />
+          </span>
           <span className="spdf-section__unit">{unit}</span>
         </div>
         <div className="spdf-section__aside">{aside}</div>
@@ -106,51 +150,22 @@ function Section({
   );
 }
 
-function PdfVideoLinks({
-  breaklineVideoLink,
-  groundDuelsVideoLink,
-}: {
-  breaklineVideoLink: string;
-  groundDuelsVideoLink: string;
-}) {
-  const rows = [
-    { label: "Breakline passes", url: breaklineVideoLink.trim() },
-    { label: "Ground duels", url: groundDuelsVideoLink.trim() },
-  ];
-
-  return (
-    <section className="spdf-videos" aria-label="Video clips">
-      <h4 className="spdf-videos__title">Video clips</h4>
-      <ul className="spdf-videos__list">
-        {rows.map((row) => (
-          <li key={row.label}>
-            {row.url ? (
-              <a className="spdf-videos__link" href={row.url} data-pdf-link={row.url}>
-                <span className="spdf-videos__play" aria-hidden="true">
-                  ▶
-                </span>
-                <span className="spdf-videos__text">
-                  <strong>{row.label}</strong>
-                  <span>{linkHost(row.url)}</span>
-                </span>
-              </a>
-            ) : (
-              <span className="spdf-videos__empty">{row.label} — pending</span>
-            )}
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfSheetProps) {
+export function StatsGamePdfSheet({
+  stats,
+  photoUrl,
+  logoUrl,
+  playIconUrl,
+  clubLogoUrl,
+  opponentLogoUrl,
+}: StatsGamePdfSheetProps) {
   const { player, meta, progressivePasses, breaklinePasses, groundDuels, aerialDuels } = stats;
   const incorrect = progressivePasses.attempted - progressivePasses.correct;
   const duelsWon = groundDuels.disputed - groundDuels.lost;
   const aerialLost = aerialDuels?.lost ?? 0;
   const aerialTotal = (aerialDuels?.won ?? 0) + aerialLost;
   const showAerial = aerialDuels && aerialTotal > 0;
+  const breaklineClip = resolveBreaklineClip(stats);
+  const duelsClip = resolveDuelsClip(stats);
 
   return (
     <article className="stats-pdf" aria-hidden="true">
@@ -161,7 +176,13 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
         <div className="spdf-side__identity">
           <p className="spdf-side__label">Athlete</p>
           <h2 className="spdf-side__name">{player.name}</h2>
-          <p className="spdf-side__club">{player.club}</p>
+          <p className="spdf-side__club">
+            {clubLogoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={clubLogoUrl} alt="" className="spdf-side__club-logo" />
+            ) : null}
+            {player.club}
+          </p>
         </div>
         <p className="spdf-side__slogan">{BRAND.slogan}</p>
       </aside>
@@ -173,7 +194,13 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
             <h1 className="spdf-head__title">{meta.title}</h1>
           </div>
           <div className="spdf-head__meta">
-            <span>{meta.subtitle}</span>
+            <span className="spdf-head__match">
+              {opponentLogoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={opponentLogoUrl} alt="" className="spdf-head__logo" />
+              ) : null}
+              {meta.subtitle}
+            </span>
           </div>
         </header>
 
@@ -183,6 +210,7 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
             title="Progressive Passes"
             value={progressivePasses.attempted}
             unit="Progressive passes"
+            playIconUrl={playIconUrl}
             aside={
               <StatTiles
                 items={[
@@ -209,6 +237,8 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
             title="Breakline Passes"
             value={breaklinePasses.count}
             unit="Breakline passes"
+            playHref={breaklineClip}
+            playIconUrl={playIconUrl}
             aside={
               <StatTiles items={[{ label: "Progressive passes", value: progressivePasses.attempted, tone: "blue" }]} />
             }
@@ -230,6 +260,8 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
             title="Ground Duels"
             value={groundDuels.disputed}
             unit="Ground duels"
+            playHref={duelsClip}
+            playIconUrl={playIconUrl}
             aside={
               <StatTiles
                 items={[
@@ -254,9 +286,11 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
           {showAerial ? (
             <Section
               phase="defensive"
-              title="Aerial Duels"
+              title={aerialLost > 0 ? "Aerial Duels" : "Aerial Duels Won"}
               value={aerialLost > 0 ? aerialTotal : aerialDuels!.won}
               unit={aerialLost > 0 ? "Aerial duels" : "Aerial duels won"}
+              playHref={duelsClip}
+              playIconUrl={playIconUrl}
               aside={
                 aerialLost > 0 ? (
                   <StatTiles
@@ -285,11 +319,6 @@ export function StatsGamePdfSheet({ stats, photoUrl, logoUrl }: StatsGamePdfShee
             />
           ) : null}
         </div>
-
-        <PdfVideoLinks
-          breaklineVideoLink={breaklinePasses.videoLink}
-          groundDuelsVideoLink={groundDuels.videoLink}
-        />
 
         <footer className="spdf-foot">
           <span>{BRAND.name}</span>
