@@ -495,93 +495,121 @@ body::before {
   outline-offset: 2px;
 }
 
-.per-game-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 8px;
-  padding: 8px 12px;
-  border: 1px solid color-mix(in srgb, var(--tone-accent) 28%, var(--line));
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--sga-navy) 55%, var(--surface-sunken));
-}
-
-.per-game-badge--inline {
-  margin-top: 6px;
-}
-
-.per-game-badge__avg {
-  font-size: 22px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.02em;
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-}
-
-.per-game-badge__text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.per-game-badge__label {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--tone-accent);
-}
-
-.per-game-badge__games {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-muted);
-}
-
-.per-game-badge-subtle {
-  display: block;
-  margin-top: 6px;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.35;
-  color: var(--text-faint);
-  font-variant-numeric: tabular-nums;
-}
+/* ---------- Season figures ---------- */
 
 .count-line {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 8px 10px;
-  margin: 0 0 10px;
+  align-items: flex-end;
+  gap: 8px 14px;
+  margin: 0;
 }
 
-.count-line__main {
-  font-size: 22px;
+.count-line__total {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.count-line__value {
+  font-size: 56px;
   font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
   color: var(--text);
   font-variant-numeric: tabular-nums;
 }
 
-.count-line__sep {
-  font-size: 18px;
-  font-weight: 600;
-  color: color-mix(in srgb, var(--sga-white) 28%, transparent);
+.count-line--compact .count-line__value {
+  font-size: 36px;
 }
 
-.count-line__avg {
-  font-size: 16px;
+.count-line__unit {
+  font-size: 12px;
   font-weight: 700;
-  line-height: 1.2;
-  color: color-mix(in srgb, var(--sga-white) 48%, transparent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.metric-card__count-line--meter {
+  margin-bottom: 12px;
+}
+
+.metric-card__count-line--meter .count-line__value {
+  font-size: 32px;
+}
+
+.metric-card--hero .count-line + .metric-card__caption {
+  margin-top: 12px;
+}
+
+.avg-pill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 5px 10px 4px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--tone-accent) 42%, transparent);
+  background: color-mix(in srgb, var(--tone-accent) 16%, transparent);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.count-line .avg-pill {
+  margin-bottom: 3px;
+}
+
+.avg-pill__value {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: color-mix(in srgb, var(--sga-white) 88%, var(--tone-accent));
   font-variant-numeric: tabular-nums;
 }
 
-.metric-card__caption--season {
-  margin-top: 4px;
+.avg-pill__label {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tone-accent);
+}
+
+.avg-pill--legend {
+  padding: 3px 8px 2px;
+  gap: 4px;
+}
+
+.avg-pill--legend .avg-pill__value {
+  font-size: 13px;
+}
+
+.avg-pill--legend .avg-pill__label {
+  font-size: 8.5px;
+}
+
+.metric-card__avg-pill {
+  align-self: flex-start;
+  margin-top: 10px;
+}
+
+.legend.legend--season li {
+  grid-template-columns: 10px minmax(0, 1fr) auto auto;
+}
+
+.legend.legend--season .avg-pill--legend {
+  justify-self: end;
+}
+
+.legend.legend--season .legend__clip-stat,
+.legend.legend--season strong {
+  min-width: 64px;
+  margin-left: 0;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .board {

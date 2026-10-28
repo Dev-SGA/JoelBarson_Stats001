@@ -4,15 +4,14 @@ import { useMemo, useState } from "react";
 import { AthleteProfileCard } from "@/components/AthleteProfileCard";
 import { ExportPdfButton } from "@/components/ExportPdfButton";
 import { ClipAnchor, ClipLegendLabel, ClipMetricTitle, PlayTip } from "@/components/ClipUi";
-import { CountLine } from "@/components/CountLine";
-import { PerGameBadge } from "@/components/PerGameBadge";
+import { AvgPill, CountLine } from "@/components/CountLine";
 import { VideoLinksProvider } from "@/components/VideoLinksContext";
 import { MetricFlow } from "@/components/MetricFlow";
 import { SgaBrand } from "@/components/SgaBrand";
 import { SgaCornerBrand } from "@/components/SgaCornerBrand";
 import { TopicsBoard, type Topic } from "@/components/TopicsBoard";
 import { BRAND } from "@/lib/brand";
-import { matchVideoClip, perGame, seasonMatch, toGameStats, type MatchStats, type StatsReport } from "@/lib/stats";
+import { matchVideoClip, seasonMatch, toGameStats, type MatchStats, type StatsReport } from "@/lib/stats";
 
 type GameStatsReportProps = {
   report: StatsReport;
@@ -65,23 +64,18 @@ function SplitMeter({
 }) {
   const total = primary + secondary;
   const primaryPct = percent(primary, total);
+  const showAvg = Boolean(games && seasonAvgLabels);
 
   return (
     <div className="metric-card">
       <h3 className="metric-card__title">{title}</h3>
-      {games && countUnit ? <CountLine value={total} unit={countUnit} games={games} /> : null}
+      {games && countUnit ? <CountLine value={total} unit={countUnit} games={games} className="metric-card__count-line--meter" /> : null}
       <p className="metric-card__headline">{headline}</p>
-      {games && seasonAvgLabels ? (
-        <p className="metric-card__caption metric-card__caption--season">
-          Avg {seasonAvgLabels.primary.toLowerCase()} {perGame(primary, games)} · avg {seasonAvgLabels.secondary.toLowerCase()}{" "}
-          {perGame(secondary, games)} per game
-        </p>
-      ) : null}
       <div className="meter" role="img" aria-label={`${primaryLabel}: ${primary}. ${secondaryLabel}: ${secondary}.`}>
         <span className={`meter__seg meter__seg--${primaryTone}`} style={{ width: `${primaryPct}%` }} />
         <span className={`meter__seg meter__seg--${secondaryTone}`} style={{ width: `${100 - primaryPct}%` }} />
       </div>
-      <ul className="legend">
+      <ul className={`legend${showAvg ? " legend--season" : ""}`}>
         <li>
           <span className={`legend__dot legend__dot--${primaryTone}`} />
           {usePlayTips ? (
@@ -89,6 +83,7 @@ function SplitMeter({
           ) : (
             <ClipLegendLabel label={primaryLabel} href={primaryHref} />
           )}
+          {showAvg && games ? <AvgPill value={primary} games={games} className="avg-pill--legend" label="/ game" /> : null}
           {primaryHref ? (
             <ClipAnchor href={primaryHref} className="legend__clip-stat" ariaLabel={`Open video: ${primaryLabel}`}>
               {primary} · {primaryPct}%
@@ -106,6 +101,7 @@ function SplitMeter({
           ) : (
             <ClipLegendLabel label={secondaryLabel} href={secondaryHref} />
           )}
+          {showAvg && games ? <AvgPill value={secondary} games={games} className="avg-pill--legend" label="/ game" /> : null}
           {secondaryHref ? (
             <ClipAnchor href={secondaryHref} className="legend__clip-stat" ariaLabel={`Open video: ${secondaryLabel}`}>
               {secondary} · {percent(secondary, total)}%
@@ -214,8 +210,11 @@ function buildTopics(match: MatchStats): Topic[] {
               <h3 className="metric-card__title metric-card__title--tip">
                 <PlayTip label="Progressive passes" tip={PASS_TIPS.progressive} />
               </h3>
-              <span className="metric-card__value">{progressivePasses.attempted}</span>
-              {games ? <PerGameBadge total={progressivePasses.attempted} games={games} subtle /> : null}
+              {games ? (
+                <CountLine value={progressivePasses.attempted} unit="passes" games={games} size="hero" />
+              ) : (
+                <span className="metric-card__value">{progressivePasses.attempted}</span>
+              )}
               <p className="metric-card__caption">
                 {isSeason
                   ? "Total progressive passes across recorded matches"
@@ -250,14 +249,15 @@ function buildTopics(match: MatchStats): Topic[] {
           items={[
             <div key="breakline" className="metric-card metric-card--hero">
               <ClipMetricTitle label="Breakline passes" href={breaklineClip} />
-              {breaklineClip ? (
+              {games ? (
+                <CountLine value={breaklinePasses.count} unit="passes" games={games} size="hero" />
+              ) : breaklineClip ? (
                 <ClipAnchor href={breaklineClip} className="metric-card__value clip-link--value" ariaLabel="Open video: Breakline passes">
                   {breaklinePasses.count}
                 </ClipAnchor>
               ) : (
                 <span className="metric-card__value">{breaklinePasses.count}</span>
               )}
-              {games ? <PerGameBadge total={breaklinePasses.count} games={games} subtle /> : null}
               <p className="metric-card__caption">
                 {isSeason ? "Total breakline passes across recorded matches" : "Passes that broke the defensive line"}
               </p>
@@ -268,11 +268,7 @@ function buildTopics(match: MatchStats): Topic[] {
               <span className="metric-card__pct">
                 {breaklinePasses.count} of {progressivePasses.attempted} progressive passes
               </span>
-              {games ? (
-                <span className="metric-card__pct">
-                  {perGame(breaklinePasses.count, games)} breakline passes avg per game
-                </span>
-              ) : null}
+              {games ? <AvgPill value={breaklinePasses.count} games={games} className="metric-card__avg-pill" /> : null}
             </div>,
           ]}
         />
@@ -286,14 +282,15 @@ function buildTopics(match: MatchStats): Topic[] {
         <>
           <div className="metric-card metric-card--hero">
             <ClipMetricTitle label="Ground duels" href={duelsClip} />
-            {duelsClip ? (
+            {games ? (
+              <CountLine value={groundDuels.disputed} unit="duels" games={games} size="hero" />
+            ) : duelsClip ? (
               <ClipAnchor href={duelsClip} className="metric-card__value clip-link--value" ariaLabel="Open video: Ground duels">
                 {groundDuels.disputed}
               </ClipAnchor>
             ) : (
               <span className="metric-card__value">{groundDuels.disputed}</span>
             )}
-            {games ? <PerGameBadge total={groundDuels.disputed} games={games} subtle /> : null}
             <p className="metric-card__caption">
               {isSeason ? "Total ground duels across recorded matches" : "Total ground duels contested in the match"}
             </p>
@@ -329,14 +326,15 @@ function buildTopics(match: MatchStats): Topic[] {
           <>
             <div className="metric-card metric-card--hero">
               <ClipMetricTitle label="Aerial duels" href={duelsClip} />
-              {duelsClip ? (
+              {games ? (
+                <CountLine value={aerialTotal} unit="duels" games={games} size="hero" />
+              ) : duelsClip ? (
                 <ClipAnchor href={duelsClip} className="metric-card__value clip-link--value" ariaLabel="Open video: Aerial duels">
                   {aerialTotal}
                 </ClipAnchor>
               ) : (
                 <span className="metric-card__value">{aerialTotal}</span>
               )}
-              {games ? <PerGameBadge total={aerialTotal} games={games} subtle /> : null}
               <p className="metric-card__caption">
                 {isSeason ? "Total aerial duels across recorded matches" : "Total aerial duels contested in the match"}
               </p>
@@ -358,14 +356,15 @@ function buildTopics(match: MatchStats): Topic[] {
         ) : (
           <div className="metric-card metric-card--hero">
             <ClipMetricTitle label="Aerial duels won" href={duelsClip} />
-            {duelsClip ? (
+            {games ? (
+              <CountLine value={aerialDuels.won} unit="won" games={games} size="hero" />
+            ) : duelsClip ? (
               <ClipAnchor href={duelsClip} className="metric-card__value clip-link--value" ariaLabel="Open video: Aerial duels">
                 {aerialDuels.won}
               </ClipAnchor>
             ) : (
               <span className="metric-card__value">{aerialDuels.won}</span>
             )}
-            {games ? <PerGameBadge total={aerialDuels.won} games={games} subtle /> : null}
             <p className="metric-card__caption">
               {isSeason ? "Total aerial duels won across recorded matches" : "Aerial duels won in the match"}
             </p>

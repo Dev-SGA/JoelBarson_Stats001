@@ -5,21 +5,42 @@ type CountLineProps = {
   unit: string;
   games?: number;
   className?: string;
+  /** hero = large figure for lead cards, compact = secondary cards. */
+  size?: "hero" | "compact";
 };
 
-/** Season readout: "58 progressive passes | 29 avg per game". */
-export function CountLine({ value, unit, games, className }: CountLineProps) {
-  if (!games || games <= 0) return null;
+/** Season readout: big total figure, unit label and a per-game average pill. */
+export function CountLine({ value, unit, games, className, size = "compact" }: CountLineProps) {
+  const showAvg = Boolean(games && games > 0);
+  const classes = ["count-line", `count-line--${size}`, showAvg ? "" : "count-line--single", className ?? ""]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <p className={`count-line${className ? ` ${className}` : ""}`}>
-      <span className="count-line__main">
-        {value} {unit}
-      </span>
-      <span className="count-line__sep" aria-hidden="true">
-        |
-      </span>
-      <span className="count-line__avg">{perGame(value, games)} avg per game</span>
-    </p>
+    <div className={classes}>
+      <div className="count-line__total">
+        <span className="count-line__value">{value}</span>
+        <span className="count-line__unit">{unit}</span>
+      </div>
+      {showAvg && games ? <AvgPill value={value} games={games} /> : null}
+    </div>
+  );
+}
+
+type AvgPillProps = {
+  value: number;
+  games: number;
+  className?: string;
+  label?: string;
+};
+
+/** "8 AVG / GAME" pill used next to season totals. */
+export function AvgPill({ value, games, className, label = "avg / game" }: AvgPillProps) {
+  if (games <= 0) return null;
+  return (
+    <span className={`avg-pill${className ? ` ${className}` : ""}`} title={`${perGame(value, games)} average per game across ${games} matches`}>
+      <span className="avg-pill__value">{perGame(value, games)}</span>
+      <span className="avg-pill__label">{label}</span>
+    </span>
   );
 }
