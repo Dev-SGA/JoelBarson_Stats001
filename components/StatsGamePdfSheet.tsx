@@ -1,5 +1,5 @@
 import { BRAND } from "@/lib/brand";
-import { clipUrl, type GameStats } from "@/lib/stats";
+import { clipUrl, formatCount, type GameStats } from "@/lib/stats";
 
 type StatsGamePdfSheetProps = {
   stats: GameStats;
@@ -67,7 +67,7 @@ function StatTiles({ items }: { items: { label: string; value: number; tone?: To
     <ul className="spdf-stats">
       {items.map((item) => (
         <li key={item.label} className="spdf-stat">
-          <span className={`spdf-stat__value${item.tone ? ` spdf-stat__value--${item.tone}` : ""}`}>{item.value}</span>
+          <span className={`spdf-stat__value${item.tone ? ` spdf-stat__value--${item.tone}` : ""}`}>{formatCount(item.value)}</span>
           <span className="spdf-stat__label">{item.label}</span>
         </li>
       ))}
@@ -138,7 +138,7 @@ function Section({
       <div className="spdf-section__body">
         <div className="spdf-section__kpi">
           <span className="spdf-section__value">
-            <PdfPlayTarget href={playHref}>{value}</PdfPlayTarget>
+            <PdfPlayTarget href={playHref}>{formatCount(value)}</PdfPlayTarget>
             <PdfPlay href={playHref} playIconUrl={playIconUrl} />
           </span>
           <span className="spdf-section__unit">{unit}</span>
@@ -223,7 +223,7 @@ export function StatsGamePdfSheet({
               <RateBar
                 label="Pass accuracy"
                 value={pct(progressivePasses.correct, progressivePasses.attempted)}
-                note={`${progressivePasses.correct} of ${progressivePasses.attempted} progressive passes correct`}
+                note={`${formatCount(progressivePasses.correct)} of ${formatCount(progressivePasses.attempted)} progressive passes correct`}
                 segments={[
                   { value: progressivePasses.correct, tone: "green" },
                   { value: incorrect, tone: "red" },
@@ -246,7 +246,7 @@ export function StatsGamePdfSheet({
               <RateBar
                 label="Share of progressive passes"
                 value={pct(breaklinePasses.count, progressivePasses.attempted)}
-                note={`${breaklinePasses.count} of ${progressivePasses.attempted} progressive passes broke the line`}
+                note={`${formatCount(breaklinePasses.count)} of ${formatCount(progressivePasses.attempted)} progressive passes broke the line`}
                 segments={[
                   { value: breaklinePasses.count, tone: "blue" },
                   { value: progressivePasses.attempted - breaklinePasses.count, tone: "grey" },
@@ -274,7 +274,7 @@ export function StatsGamePdfSheet({
               <RateBar
                 label="Duel win rate"
                 value={pct(duelsWon, groundDuels.disputed)}
-                note={`${duelsWon} of ${groundDuels.disputed} ground duels won`}
+                note={`${formatCount(duelsWon)} of ${formatCount(groundDuels.disputed)} ground duels won`}
                 segments={[
                   { value: duelsWon, tone: "green" },
                   { value: groundDuels.lost, tone: "red" },
@@ -308,7 +308,7 @@ export function StatsGamePdfSheet({
                   <RateBar
                     label="Duel win rate"
                     value={pct(aerialDuels!.won, aerialTotal)}
-                    note={`${aerialDuels!.won} of ${aerialTotal} aerial duels won`}
+                    note={`${formatCount(aerialDuels!.won)} of ${formatCount(aerialTotal)} aerial duels won`}
                     segments={[
                       { value: aerialDuels!.won, tone: "green" },
                       { value: aerialLost, tone: "red" },

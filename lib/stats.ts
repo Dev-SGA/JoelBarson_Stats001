@@ -41,6 +41,8 @@ export type MatchStats = {
   videos?: MatchVideo[];
   /** Set on season aggregate — number of matches rolled up. */
   games?: number;
+  /** Season numbers divided by the games played. */
+  perGame?: boolean;
 };
 
 export type StatsReport = {
@@ -125,12 +127,42 @@ export function seasonMatch(matches: MatchStats[]): MatchStats {
   };
 }
 
+/** Whole numbers stay as they are; averages show one decimal. */
+export function formatCount(value: number): string {
+  if (Number.isInteger(value)) return String(value);
+  return (Math.round(value * 10) / 10).toFixed(1).replace(/\.0$/, "");
+}
+
+function scaleNumbers<T>(value: T, factor: number): T {
+  if (typeof value === "number") return (value * factor) as T;
+  if (Array.isArray(value) || value === null || typeof value !== "object") return value;
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).map(([key, item]) => [key, scaleNumbers(item, factor)]),
+  ) as T;
+}
+
+/** Season match with every absolute number divided by the games played. Shares stay the same. */
+export function perGameMatch(season: MatchStats): MatchStats {
+  const games = season.games ?? 0;
+  const factor = games > 0 ? 1 / games : 0;
+
+  return {
+    ...season,
+    label: "Season · Per game",
+    progressivePasses: scaleNumbers(season.progressivePasses, factor),
+    breaklinePasses: scaleNumbers(season.breaklinePasses, factor),
+    groundDuels: scaleNumbers(season.groundDuels, factor),
+    aerialDuels: scaleNumbers(season.aerialDuels ?? null, factor),
+    perGame: true,
+  };
+}
+
 export function toGameStats(report: StatsReport, match: MatchStats): GameStats {
   return {
     meta: {
       ...report.meta,
       subtitle: match.label,
-      fileSlug: match.id === "season" ? `${report.meta.session}-season` : `${report.meta.session}-${match.id}`,
+      fileSlug: `${report.meta.session}-${match.id}${match.perGame ? "-per-game" : ""}`,
     },
     player: report.player,
     opponentLogo: match.logo,
