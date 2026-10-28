@@ -59,7 +59,8 @@
         "videoLink": "https://drive.google.com/file/d/14ZEkan9QyMA5oSOOj5ac-iBKdU681So5/view?usp=drive_link"
       },
       "aerialDuels": {
-        "won": 2
+        "won": 2,
+        "lost": 0
       },
       "videos": [
         {

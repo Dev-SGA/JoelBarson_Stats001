@@ -351,54 +351,37 @@ function buildTopics(match: MatchStats): Topic[] {
       id: "aerial-duels",
       title: "Aerial Duels",
       phase: "defensive",
-      content:
-        aerialLost > 0 ? (
-          <>
-            <div className="metric-card metric-card--hero">
-              <ClipMetricTitle label="Aerial duels" href={duelsClip} />
-              {games ? (
-                <CountLine value={aerialTotal} unit="duels" size="hero" />
-              ) : duelsClip ? (
-                <ClipAnchor href={duelsClip} className="metric-card__value clip-link--value" ariaLabel="Open video: Aerial duels">
-                  {aerialTotal}
-                </ClipAnchor>
-              ) : (
-                <span className="metric-card__value">{aerialTotal}</span>
-              )}
-              <p className="metric-card__caption">
-                {isSeason ? seasonCaption("aerial duels") : "Total aerial duels contested in the match"}
-              </p>
-            </div>
-            <SplitMeter
-              title="Duel outcome"
-              headline={`${percent(aerialDuels.won, aerialTotal)}% win rate`}
-              primary={aerialDuels.won}
-              secondary={aerialLost}
-              primaryLabel="Won"
-              secondaryLabel="Lost"
-              primaryTone="positive"
-              secondaryTone="negative"
-              games={games}
-              countUnit="aerial duels"
-            />
-          </>
-        ) : (
+      content: (
+        <>
           <div className="metric-card metric-card--hero">
-            <ClipMetricTitle label="Aerial duels won" href={duelsClip} />
+            <ClipMetricTitle label="Aerial duels" href={duelsClip} />
             {games ? (
-              <CountLine value={aerialDuels.won} unit="won" size="hero" />
+              <CountLine value={aerialTotal} unit="duels" size="hero" />
             ) : duelsClip ? (
               <ClipAnchor href={duelsClip} className="metric-card__value clip-link--value" ariaLabel="Open video: Aerial duels">
-                {aerialDuels.won}
+                {aerialTotal}
               </ClipAnchor>
             ) : (
-              <span className="metric-card__value">{aerialDuels.won}</span>
+              <span className="metric-card__value">{aerialTotal}</span>
             )}
             <p className="metric-card__caption">
-              {isSeason ? seasonCaption("aerial duels won") : "Aerial duels won in the match"}
+              {isSeason ? seasonCaption("aerial duels") : "Total aerial duels contested in the match"}
             </p>
           </div>
-        ),
+          <SplitMeter
+            title="Duel outcome"
+            headline={`${percent(aerialDuels.won, aerialTotal)}% win rate`}
+            primary={aerialDuels.won}
+            secondary={aerialLost}
+            primaryLabel="Won"
+            secondaryLabel="Lost"
+            primaryTone="positive"
+            secondaryTone="negative"
+            games={games}
+            countUnit="aerial duels"
+          />
+        </>
+      ),
     });
   }
 

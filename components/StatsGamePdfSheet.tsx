@@ -286,35 +286,29 @@ export function StatsGamePdfSheet({
           {showAerial ? (
             <Section
               phase="defensive"
-              title={aerialLost > 0 ? "Aerial Duels" : "Aerial Duels Won"}
-              value={aerialLost > 0 ? aerialTotal : aerialDuels!.won}
-              unit={aerialLost > 0 ? "Aerial duels" : "Aerial duels won"}
+              title="Aerial Duels"
+              value={aerialTotal}
+              unit="Aerial duels"
               playHref={duelsClip}
               playIconUrl={playIconUrl}
               aside={
-                aerialLost > 0 ? (
-                  <StatTiles
-                    items={[
-                      { label: "Won", value: aerialDuels!.won, tone: "green" },
-                      { label: "Lost", value: aerialLost, tone: "red" },
-                    ]}
-                  />
-                ) : (
-                  <StatTiles items={[{ label: "Won", value: aerialDuels!.won, tone: "green" }]} />
-                )
+                <StatTiles
+                  items={[
+                    { label: "Won", value: aerialDuels!.won, tone: "green" },
+                    { label: "Lost", value: aerialLost, tone: "red" },
+                  ]}
+                />
               }
               footer={
-                aerialLost > 0 ? (
-                  <RateBar
-                    label="Duel win rate"
-                    value={pct(aerialDuels!.won, aerialTotal)}
-                    note={`${formatCount(aerialDuels!.won)} of ${formatCount(aerialTotal)} aerial duels won`}
-                    segments={[
-                      { value: aerialDuels!.won, tone: "green" },
-                      { value: aerialLost, tone: "red" },
-                    ]}
-                  />
-                ) : undefined
+                <RateBar
+                  label="Duel win rate"
+                  value={pct(aerialDuels!.won, aerialTotal)}
+                  note={`${formatCount(aerialDuels!.won)} of ${formatCount(aerialTotal)} aerial duels won`}
+                  segments={[
+                    { value: aerialDuels!.won, tone: "green" },
+                    { value: aerialLost, tone: "red" },
+                  ]}
+                />
               }
             />
           ) : null}
