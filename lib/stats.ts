@@ -202,7 +202,7 @@ export type ProgressMetric = {
   points: ProgressPoint[];
 };
 
-/** Metrics tracked in every match, ready for match-by-match trend charts. Aerial duels are left out unless recorded for all matches. */
+/** Metrics tracked in every match, ready for match-by-match trend charts. Aerial duels count as 0 when a match has none recorded. */
 export function progressMetrics(matches: MatchStats[]): ProgressMetric[] {
   const base = (match: MatchStats) => ({
     id: match.id,
@@ -211,7 +211,6 @@ export function progressMetrics(matches: MatchStats[]): ProgressMetric[] {
     logo: match.logo,
   });
   const rate = (good: number, total: number) => (total > 0 ? (good / total) * 100 : 0);
-  const everyAerial = matches.every((match) => match.aerialDuels != null);
 
   const metrics: (ProgressMetric | null)[] = [
     {
@@ -232,7 +231,13 @@ export function progressMetrics(matches: MatchStats[]): ProgressMetric[] {
       title: "Breakline Passes",
       phase: "build-up",
       quantityLabel: "Passes",
-      points: matches.map((match) => ({ ...base(match), quantity: match.breaklinePasses.count })),
+      qualityLabel: "Share of progressive",
+      points: matches.map((match) => ({
+        ...base(match),
+        quantity: match.breaklinePasses.count,
+        quality: rate(match.breaklinePasses.count, match.progressivePasses.attempted),
+        qualityDetail: `${match.breaklinePasses.count} of ${match.progressivePasses.attempted} progressive`,
+      })),
     },
     {
       id: "ground-duels",
@@ -250,26 +255,24 @@ export function progressMetrics(matches: MatchStats[]): ProgressMetric[] {
         };
       }),
     },
-    everyAerial
-      ? {
-          id: "aerial-duels",
-          title: "Aerial Duels",
-          phase: "defensive",
-          quantityLabel: "Duels",
-          qualityLabel: "Won",
-          points: matches.map((match) => {
-            const won = match.aerialDuels?.won ?? 0;
-            const lost = match.aerialDuels?.lost ?? 0;
-            const total = won + lost;
-            return {
-              ...base(match),
-              quantity: total,
-              quality: rate(won, total),
-              qualityDetail: `${won} of ${total} won`,
-            };
-          }),
-        }
-      : null,
+    {
+      id: "aerial-duels",
+      title: "Aerial Duels",
+      phase: "defensive",
+      quantityLabel: "Duels",
+      qualityLabel: "Won",
+      points: matches.map((match) => {
+        const won = match.aerialDuels?.won ?? 0;
+        const lost = match.aerialDuels?.lost ?? 0;
+        const total = won + lost;
+        return {
+          ...base(match),
+          quantity: total,
+          quality: rate(won, total),
+          qualityDetail: `${won} of ${total} won`,
+        };
+      }),
+    },
   ];
 
   return metrics.filter((metric): metric is ProgressMetric => metric !== null);
