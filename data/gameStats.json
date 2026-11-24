@@ -76,6 +76,30 @@
           "url": "https://drive.google.com/file/d/14ZEkan9QyMA5oSOOj5ac-iBKdU681So5/view?usp=drive_link"
         }
       ]
+    },
+    {
+      "id": "columbus-crew",
+      "label": "vs Columbus Crew",
+      "shortLabel": "Columbus Crew",
+      "logo": "/clubs/columbus-crew.png",
+      "progressivePasses": {
+        "attempted": 25,
+        "correct": 19
+      },
+      "breaklinePasses": {
+        "count": 8,
+        "videoLink": ""
+      },
+      "groundDuels": {
+        "disputed": 8,
+        "lost": 1,
+        "videoLink": ""
+      },
+      "aerialDuels": {
+        "won": 2,
+        "lost": 2
+      },
+      "videos": []
     }
   ]
 }
