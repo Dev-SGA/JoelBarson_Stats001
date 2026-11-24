@@ -3,10 +3,10 @@
 import { useId, useState } from "react";
 import { formatCount, progressMetrics, type MatchStats, type ProgressMetric } from "@/lib/stats";
 
-type Focus = "quantity" | "quality";
+type Focus = "quantity" | "rate";
 type Pt = [number, number];
 
-const COLORS: Record<Focus, string> = { quantity: "#5aa2e0", quality: "#3fb56b" };
+const COLORS: Record<Focus, string> = { quantity: "#5aa2e0", rate: "#3fb56b" };
 const PHASE_LABEL = { "build-up": "Build-Up", defensive: "Defensive Phase" } as const;
 const NICE_STEPS = [1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50, 60, 80, 100, 150, 200, 250, 500, 1000];
 const INK = "#04141f";
@@ -71,12 +71,12 @@ function seriesStats(values: number[]) {
   return { avg, best };
 }
 
-function Delta({ value, unit, tone }: { value: number; unit: string; tone: "neutral" | "quality" }) {
+function Delta({ value, unit, tone }: { value: number; unit: string; tone: "neutral" | "rate" }) {
   const rounded = Math.round(value * 10) / 10;
   const direction = rounded === 0 ? "flat" : rounded > 0 ? "up" : "down";
   const arrow = direction === "up" ? "▲" : direction === "down" ? "▼" : "■";
   const sign = rounded > 0 ? "+" : "";
-  const toneClass = tone === "quality" && direction !== "flat" ? ` prog-delta--${direction}` : "";
+  const toneClass = tone === "rate" && direction !== "flat" ? ` prog-delta--${direction}` : "";
   return (
     <span className={`prog-delta${toneClass}`}>
       <span aria-hidden="true">{arrow}</span> {sign}
@@ -92,10 +92,10 @@ function TrendChart({ metric, focus }: { metric: ProgressMetric; focus: Focus })
 
   const { points } = metric;
   const count = points.length;
-  const hasQuality = metric.qualityLabel != null;
-  const emphasized: Focus = hasQuality ? focus : "quantity";
+  const hasRate = metric.rateLabel != null;
+  const emphasized: Focus = hasRate ? focus : "quantity";
 
-  const margin = { top: 24, right: hasQuality ? 42 : 12, bottom: 56, left: 36 };
+  const margin = { top: 24, right: hasRate ? 42 : 12, bottom: 56, left: 36 };
   const innerW = W - margin.left - margin.right;
   const innerH = H - margin.top - margin.bottom;
   const baseY = margin.top + innerH;
@@ -106,12 +106,12 @@ function TrendChart({ metric, focus }: { metric: ProgressMetric; focus: Focus })
   const xAt = (index: number) =>
     count === 1 ? margin.left + innerW / 2 : margin.left + padX + (index * (innerW - 2 * padX)) / (count - 1);
   const yQuantity = (value: number) => margin.top + innerH * (1 - value / quantityTop);
-  const yQuality = (value: number) => margin.top + innerH * (1 - value / 100);
+  const yRate = (value: number) => margin.top + innerH * (1 - value / 100);
 
   const series = [
     { key: "quantity" as const, values: points.map((point) => point.quantity), y: yQuantity, format: countLabel },
-    ...(hasQuality
-      ? [{ key: "quality" as const, values: points.map((point) => point.quality ?? 0), y: yQuality, format: pctLabel }]
+    ...(hasRate
+      ? [{ key: "rate" as const, values: points.map((point) => point.rate ?? 0), y: yRate, format: pctLabel }]
       : []),
   ];
   const strongSeries = series.find((s) => s.key === emphasized) ?? series[0];
@@ -202,15 +202,15 @@ function TrendChart({ metric, focus }: { metric: ProgressMetric; focus: Focus })
               >
                 {formatCount(step * tick)}
               </text>
-              {hasQuality ? (
+              {hasRate ? (
                 <text
                   x={W - margin.right + 9}
                   y={y}
                   dy="0.35em"
                   textAnchor="start"
                   className="prog-axis"
-                  fill={COLORS.quality}
-                  opacity={emphasized === "quality" ? 0.9 : 0.4}
+                  fill={COLORS.rate}
+                  opacity={emphasized === "rate" ? 0.9 : 0.4}
                 >
                   {tick * 25}%
                 </text>
@@ -387,17 +387,17 @@ function TrendChart({ metric, focus }: { metric: ProgressMetric; focus: Focus })
             return (
               <p key={s.key} className={`prog-tip__row${s.key === emphasized ? " is-strong" : ""}`}>
                 <span className="prog-tip__dot" style={{ background: COLORS[s.key] }} />
-                {s.key === "quantity" ? metric.quantityLabel : metric.qualityLabel}
+                {s.key === "quantity" ? metric.quantityLabel : metric.rateLabel}
                 <strong>{s.format(value)}</strong>
                 <span className={`prog-tip__vs prog-tip__vs--${tone}`}>
                   {diff >= 0 ? "+" : "−"}
-                  {s.key === "quality" ? `${Math.abs(Math.round(diff))} pts` : countLabel(Math.abs(diff))}
+                  {s.key === "rate" ? `${Math.abs(Math.round(diff))} pts` : countLabel(Math.abs(diff))}
                 </span>
               </p>
             );
           })}
           <p className="prog-tip__detail">
-            {hovered.qualityDetail ? `${hovered.qualityDetail} · ` : ""}± vs average
+            {hovered.rateDetail ? `${hovered.rateDetail} · ` : ""}± vs average
           </p>
         </div>
       ) : null}
@@ -414,20 +414,20 @@ function MetricCard({
   focus: Focus;
   onFocus: (focus: Focus) => void;
 }) {
-  const hasQuality = metric.qualityLabel != null;
-  const emphasized: Focus = hasQuality ? focus : "quantity";
-  const isRate = emphasized === "quality";
+  const hasRate = metric.rateLabel != null;
+  const emphasized: Focus = hasRate ? focus : "quantity";
+  const isRate = emphasized === "rate";
   const { points } = metric;
   const last = points[points.length - 1];
   const previous = points.length > 1 ? points[points.length - 2] : null;
-  const values = points.map((point) => (isRate ? point.quality ?? 0 : point.quantity));
+  const values = points.map((point) => (isRate ? point.rate ?? 0 : point.quantity));
   const format = isRate ? pctLabel : countLabel;
   const stats = seriesStats(values);
   const bestPoint = points[stats.best];
 
   const delta = previous
     ? isRate
-      ? { value: Math.round(last.quality ?? 0) - Math.round(previous.quality ?? 0), unit: " pts", tone: "quality" as const }
+      ? { value: Math.round(last.rate ?? 0) - Math.round(previous.rate ?? 0), unit: " pts", tone: "rate" as const }
       : { value: last.quantity - previous.quantity, unit: "", tone: "neutral" as const }
     : null;
   return (
@@ -471,9 +471,9 @@ function MetricCard({
         </div>
       </dl>
 
-      {hasQuality ? (
+      {hasRate ? (
         <div className="prog-legend" role="group" aria-label={`${metric.title} highlight`}>
-          {(["quantity", "quality"] as const).map((key) => (
+          {(["quantity", "rate"] as const).map((key) => (
             <button
               key={key}
               type="button"
@@ -482,7 +482,7 @@ function MetricCard({
               onClick={() => onFocus(key)}
             >
               <span className={`prog-legend__swatch prog-legend__swatch--${key}`} />
-              {key === "quantity" ? metric.quantityLabel : `${metric.qualityLabel} %`}
+              {key === "quantity" ? metric.quantityLabel : `${metric.rateLabel} %`}
             </button>
           ))}
         </div>
@@ -516,7 +516,7 @@ export function ProgressView({ matches, initialFocus = "quantity" }: { matches: 
         <div className="progress__focus" role="group" aria-label="Highlight">
           <span className="progress__focus-label">Highlight</span>
           <div className="match-nav__pills">
-            {(["quantity", "quality"] as const).map((key) => (
+            {(["quantity", "rate"] as const).map((key) => (
               <button
                 key={key}
                 type="button"
@@ -524,7 +524,7 @@ export function ProgressView({ matches, initialFocus = "quantity" }: { matches: 
                 aria-pressed={focus === key}
                 onClick={() => setFocus(key)}
               >
-                {key === "quantity" ? "Quantity" : "Quality"}
+                {key === "quantity" ? "Quantity" : "Rate"}
               </button>
             ))}
           </div>
@@ -538,8 +538,8 @@ export function ProgressView({ matches, initialFocus = "quantity" }: { matches: 
       </div>
 
       <p className="progress__note">
-        Quantity is the raw count per match; quality is the success rate. The dotted line marks the average of the
-        highlighted series. Only metrics recorded in every match are shown.
+        Quantity is the raw count per match; rate is the percentage split (success rate or share of the total).
+        The dotted line marks the average of the highlighted series.
       </p>
     </section>
   );

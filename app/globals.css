@@ -1539,7 +1539,7 @@ body::before {
   box-shadow: 0 0 8px rgba(90, 162, 224, 0.6);
 }
 
-.prog-legend__swatch--quality {
+.prog-legend__swatch--rate {
   background: #3fb56b;
   box-shadow: 0 0 8px rgba(63, 181, 107, 0.6);
 }
