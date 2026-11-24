@@ -62,6 +62,10 @@ function resolveDuelsClip(stats: GameStats): string | undefined {
   return fromList || fallback || undefined;
 }
 
+function resolveAerialClip(stats: GameStats): string | undefined {
+  return clipUrl(stats.videos, "Aerial duels", "Aerial Duels")?.trim() || resolveDuelsClip(stats);
+}
+
 function StatTiles({ items }: { items: { label: string; value: number; tone?: Tone }[] }) {
   return (
     <ul className="spdf-stats">
@@ -166,6 +170,7 @@ export function StatsGamePdfSheet({
   const showAerial = aerialDuels && aerialTotal > 0;
   const breaklineClip = resolveBreaklineClip(stats);
   const duelsClip = resolveDuelsClip(stats);
+  const aerialClip = resolveAerialClip(stats);
 
   return (
     <article className="stats-pdf" aria-hidden="true">
@@ -289,7 +294,7 @@ export function StatsGamePdfSheet({
               title="Aerial Duels"
               value={aerialTotal}
               unit="Aerial duels"
-              playHref={duelsClip}
+              playHref={aerialClip}
               playIconUrl={playIconUrl}
               aside={
                 <StatTiles

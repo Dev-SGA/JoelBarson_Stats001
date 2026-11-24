@@ -13,6 +13,7 @@ import { TopicsBoard, type Topic } from "@/components/TopicsBoard";
 import { ProgressView } from "@/components/ProgressView";
 import { BRAND } from "@/lib/brand";
 import {
+  clipUrl,
   formatCount,
   matchVideoClip,
   perGameMatch,
@@ -224,6 +225,9 @@ function buildTopics(match: MatchStats): Topic[] {
     "Duels",
     "All duels",
       );
+  const aerialClip = isSeason
+    ? undefined
+    : (clipUrl(match.videos, "Aerial duels", "Aerial Duels") ?? duelsClip);
 
   const incorrect = progressivePasses.attempted - progressivePasses.correct;
   const passAccuracy = percent(progressivePasses.correct, progressivePasses.attempted);
@@ -355,11 +359,11 @@ function buildTopics(match: MatchStats): Topic[] {
       content: (
         <>
           <div className="metric-card metric-card--hero">
-            <ClipMetricTitle label="Aerial duels" href={duelsClip} />
+            <ClipMetricTitle label="Aerial duels" href={aerialClip} />
             {games ? (
               <CountLine value={aerialTotal} unit="duels" size="hero" />
-            ) : duelsClip ? (
-              <ClipAnchor href={duelsClip} className="metric-card__value clip-link--value" ariaLabel="Open video: Aerial duels">
+            ) : aerialClip ? (
+              <ClipAnchor href={aerialClip} className="metric-card__value clip-link--value" ariaLabel="Open video: Aerial duels">
                 {aerialTotal}
               </ClipAnchor>
             ) : (
