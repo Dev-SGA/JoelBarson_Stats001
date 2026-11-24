@@ -1534,7 +1534,7 @@ body::before {
   border-radius: 2px;
 }
 
-.prog-legend__swatch--quantity {
+.prog-legend__swatch--volume {
   background: #5aa2e0;
   box-shadow: 0 0 8px rgba(90, 162, 224, 0.6);
 }

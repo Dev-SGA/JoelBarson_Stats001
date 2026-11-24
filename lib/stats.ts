@@ -187,7 +187,7 @@ export type ProgressPoint = {
   label: string;
   shortLabel: string;
   logo: string;
-  quantity: number;
+  volume: number;
   /** Success rate in percent (0-100). */
   rate?: number;
   rateDetail?: string;
@@ -197,7 +197,7 @@ export type ProgressMetric = {
   id: string;
   title: string;
   phase: "build-up" | "defensive";
-  quantityLabel: string;
+  volumeLabel: string;
   rateLabel?: string;
   points: ProgressPoint[];
 };
@@ -217,11 +217,11 @@ export function progressMetrics(matches: MatchStats[]): ProgressMetric[] {
       id: "progressive-passes",
       title: "Progressive Passes",
       phase: "build-up",
-      quantityLabel: "Attempted",
+      volumeLabel: "Attempted",
       rateLabel: "Correct",
       points: matches.map((match) => ({
         ...base(match),
-        quantity: match.progressivePasses.attempted,
+        volume: match.progressivePasses.attempted,
         rate: pct(match.progressivePasses.correct, match.progressivePasses.attempted),
         rateDetail: `${match.progressivePasses.correct} of ${match.progressivePasses.attempted} correct`,
       })),
@@ -230,11 +230,11 @@ export function progressMetrics(matches: MatchStats[]): ProgressMetric[] {
       id: "breakline-passes",
       title: "Breakline Passes",
       phase: "build-up",
-      quantityLabel: "Passes",
+      volumeLabel: "Passes",
       rateLabel: "Share of progressive",
       points: matches.map((match) => ({
         ...base(match),
-        quantity: match.breaklinePasses.count,
+        volume: match.breaklinePasses.count,
         rate: pct(match.breaklinePasses.count, match.progressivePasses.attempted),
         rateDetail: `${match.breaklinePasses.count} of ${match.progressivePasses.attempted} progressive`,
       })),
@@ -243,13 +243,13 @@ export function progressMetrics(matches: MatchStats[]): ProgressMetric[] {
       id: "ground-duels",
       title: "Ground Duels",
       phase: "defensive",
-      quantityLabel: "Duels",
+      volumeLabel: "Duels",
       rateLabel: "Won",
       points: matches.map((match) => {
         const won = match.groundDuels.disputed - match.groundDuels.lost;
         return {
           ...base(match),
-          quantity: match.groundDuels.disputed,
+          volume: match.groundDuels.disputed,
           rate: pct(won, match.groundDuels.disputed),
           rateDetail: `${won} of ${match.groundDuels.disputed} won`,
         };
@@ -259,7 +259,7 @@ export function progressMetrics(matches: MatchStats[]): ProgressMetric[] {
       id: "aerial-duels",
       title: "Aerial Duels",
       phase: "defensive",
-      quantityLabel: "Duels",
+      volumeLabel: "Duels",
       rateLabel: "Won",
       points: matches.map((match) => {
         const won = match.aerialDuels?.won ?? 0;
@@ -267,7 +267,7 @@ export function progressMetrics(matches: MatchStats[]): ProgressMetric[] {
         const total = won + lost;
         return {
           ...base(match),
-          quantity: total,
+          volume: total,
           rate: pct(won, total),
           rateDetail: `${won} of ${total} won`,
         };
